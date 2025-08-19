@@ -1,0 +1,57 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id              String   @id @default(cuid())
+  email           String   @unique
+  passwordHash    String?
+  emailVerifiedAt DateTime?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  devices         UserDevice[]
+  tokens          EmailToken[]
+}
+
+model UserDevice {
+  id               String   @id @default(cuid())
+  userId           String
+  deviceId         String
+  refreshTokenHash String?
+  pushToken        String?
+  userAgent        String?
+  lastSeen         DateTime?
+  createdAt        DateTime @default(now())
+  revoked          Boolean  @default(false)
+  user             User     @relation(fields: [userId], references: [id])
+
+  @@index([userId])
+  @@unique([userId, deviceId])
+}
+
+enum EmailTokenType {
+  VERIFY_EMAIL
+  RESET_PASSWORD
+  OTP_LOGIN
+}
+
+model EmailToken {
+  id         String         @id @default(cuid())
+  userId     String
+  type       EmailTokenType
+  tokenHash  String
+  codeHash   String?
+  sentTo     String
+  expiresAt  DateTime
+  consumedAt DateTime?
+  createdAt  DateTime @default(now())
+  user       User     @relation(fields: [userId], references: [id])
+
+  @@index([userId, type])
+  @@index([type, expiresAt])
+}
