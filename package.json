@@ -6,7 +6,8 @@
     "start": "expo start",
     "android": "expo start --android",
     "ios": "expo start --ios",
-    "web": "expo start --web"
+    "web": "expo start --web",
+    "start:ngrok": "cross-env EXPO_PUBLIC_API_URL=https://512a0ddc6265.ngrok-free.app expo start -c"
   },
   "dependencies": {
     "@nestjs/config": "^4.0.2",
@@ -37,8 +38,14 @@
   },
   "devDependencies": {
     "@babel/core": "^7.25.2",
+    "@types/jest": "^30.0.0",
+    "@types/mocha": "^10.0.10",
     "@types/react": "~19.0.10",
+    "cross-env": "^10.0.0",
+    "jest": "^30.0.5",
+    "mocha": "^11.7.1",
     "prettier": "^3.6.2",
+    "ts-jest": "^29.4.1",
     "typescript": "~5.8.3"
   },
   "private": true

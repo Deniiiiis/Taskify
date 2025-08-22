@@ -1,25 +1,39 @@
+// backend/api/test/app.e2e-spec.ts
+import request, { type Response } from 'supertest';
 import { Test, TestingModule } from '@nestjs/testing';
 import { INestApplication } from '@nestjs/common';
-import * as request from 'supertest';
-import { App } from 'supertest/types';
 import { AppModule } from './../src/app.module';
+import { type Server } from 'http';
 
-describe('AppController (e2e)', () => {
-  let app: INestApplication<App>;
+describe('App (e2e)', () => {
+  let app: INestApplication;
+  let server: Server;
 
-  beforeEach(async () => {
+  beforeAll(async () => {
     const moduleFixture: TestingModule = await Test.createTestingModule({
       imports: [AppModule],
     }).compile();
 
     app = moduleFixture.createNestApplication();
     await app.init();
+
+    // 👇 getHttpServer() je typované ako any → pretypujeme na Node Server
+    server = app.getHttpServer() as unknown as Server;
   });
 
-  it('/ (GET)', () => {
-    return request(app.getHttpServer())
-      .get('/')
+  afterAll(async () => {
+    await app.close();
+  });
+
+  it('GET /health returns ok', () => {
+    return request(server)
+      .get('/health')
       .expect(200)
-      .expect('Hello World!');
+      .expect((res: Response) => {
+        const body = res.body as { ok?: boolean };
+        if (!body?.ok) {
+          throw new Error('Response missing { ok: true }');
+        }
+      });
   });
 });

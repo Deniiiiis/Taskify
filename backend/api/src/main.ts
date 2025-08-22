@@ -7,6 +7,7 @@ async function bootstrap() {
 
   // Validácia vstupov
   app.useGlobalPipes(new ValidationPipe({ whitelist: true, transform: true }));
+  app.setGlobalPrefix('api');
 
   // CORS pre mobil/web klienta
   app.enableCors({
@@ -21,9 +22,9 @@ async function bootstrap() {
 
   const port = Number(process.env.PORT) || 3000;
 
-  // '0.0.0.0' = dostupné aj z iných zariadení v LAN (telefon)
+  // '0.0.0.0' = dostupné aj z iných zariadení v LAN (telefon, tablet)
   await app.listen(port, '0.0.0.0');
-  console.log(`API beží na http://localhost:${port}`);
+  console.log(`🚀 API beží na http://localhost:${port}`);
 }
 
 bootstrap().catch((err) => {

@@ -7,15 +7,18 @@ import * as SplashScreen from "expo-splash-screen";
 
 import Onboarding from "./screens/Onboarding";
 import Login from "./screens/Login";
-import Register from "./screens/Regiter";              // ✅ fix názvu
-import ForgotPassword from "./screens/ForgotPassword"; // ✅ pridané
-import Forgot from "./screens/ForgotOptions";          // ✅ pridané
+import Register from "./screens/Register"; // ✅ fix: správny názov súboru
+import ForgotPassword from "./screens/ForgotPassword";
+import Forgot from "./screens/ForgotOptions";
+import VerifyEmail from "./screens/VerifyEmailAfterRegistration"; // ✅ doplnený import
+import VerifyEmailReg from "./screens/VerifyEmail"; // ✅ doplnený import
+import Home from "./screens/Home"; // ✅ doplnený import
 
 // --- SETTINGS ---
 const ONBOARD_KEY = "has_seen_onboarding_v1";
-const FORCE_ONBOARDING = false;   // prepínač na onboarding true=on false=off
-const FORCE_HIDE_SPLASH = false;  // prepínač na splash-delay
-const MIN_SPLASH_TIME = 1000;    // 1000 = 1 sekunda (aktuálne 10s)
+const FORCE_ONBOARDING = false;
+const FORCE_HIDE_SPLASH = false;
+const MIN_SPLASH_TIME = 1000;
 
 // --- NAVIGATION TYPES ---
 export type RootStackParamList = {
@@ -23,6 +26,9 @@ export type RootStackParamList = {
   Register: undefined;
   ForgotPassword: undefined;
   Forgot: undefined;
+  VerifyEmail: { email: string };
+  VerifyEmailReg: { email: string }; // pre registráciu
+  Home: undefined;
 };
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -35,12 +41,18 @@ if (!FORCE_HIDE_SPLASH) {
 export default function App() {
   const [bootLoading, setBootLoading] = useState(true);
   const [needsOnboarding, setNeedsOnboarding] = useState<boolean | null>(null);
+  const [initialRoute, setInitialRoute] =
+    useState<keyof RootStackParamList>("Login"); // 👈
   const splashStart = useRef(Date.now());
 
   const loadFlag = useCallback(async () => {
     try {
       const v = await AsyncStorage.getItem(ONBOARD_KEY);
       setNeedsOnboarding(v !== "1");
+
+      // 👇 skontroluj prihlásenie
+      const t = await AsyncStorage.getItem("accessToken");
+      if (t) setInitialRoute("Home");
     } catch {
       setNeedsOnboarding(true);
     } finally {
@@ -75,7 +87,6 @@ export default function App() {
   }
 
   if (bootLoading || needsOnboarding === null) {
-    // Toto sa zobrazuje AŽ keď sa schová natívny splash.
     return (
       <View style={styles.center}>
         <ActivityIndicator size="large" />
@@ -90,17 +101,28 @@ export default function App() {
 
   return (
     <NavigationContainer>
-      <Stack.Navigator screenOptions={{ headerShown: false }}>
+      <Stack.Navigator
+        screenOptions={{ headerShown: false }}
+        initialRouteName={initialRoute} //
+      >
         <Stack.Screen name="Login" component={Login} />
         <Stack.Screen name="Register" component={Register} />
         <Stack.Screen name="ForgotPassword" component={ForgotPassword} />
         <Stack.Screen name="Forgot" component={Forgot} />
+        <Stack.Screen name="VerifyEmail" component={VerifyEmail} />
+        <Stack.Screen name="VerifyEmailReg" component={VerifyEmailReg} />
+        <Stack.Screen name="Home" component={Home} />
       </Stack.Navigator>
     </NavigationContainer>
   );
 }
 
 const styles = StyleSheet.create({
-  center: { flex: 1, alignItems: "center", justifyContent: "center", backgroundColor: "#fff" },
+  center: {
+    flex: 1,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "#fff",
+  },
   mt: { marginTop: 16, fontSize: 16 },
 });

@@ -1,31 +1,31 @@
-import { Injectable, Logger } from '@nestjs/common';
+// src/email/email.service.ts
+import { Inject, Injectable, Logger } from '@nestjs/common';
 import { Resend } from 'resend';
+import { EMAIL_FROM_TOKEN, RESEND_CLIENT } from './email.tokens';
 
-// 👇 exportni si typ, aby TS vedel s nim pracovať aj mimo tohto súboru
 export interface ResendResponse {
   id?: string;
   error?: { message: string };
 }
 
+// helper na bezpečné získanie message bez `any`
+function errMsg(e: unknown): string {
+  if (e instanceof Error) return e.message;
+  if (typeof e === 'object' && e !== null && 'message' in e) {
+    const m = (e as { message?: unknown }).message;
+    if (typeof m === 'string') return m;
+  }
+  return String(e);
+}
+
 @Injectable()
 export class EmailService {
   private readonly log = new Logger(EmailService.name);
-  private resend: Resend | null;
-  private from: string;
 
-  constructor() {
-    const key = process.env.RESEND_API_KEY ?? '';
-    this.from = process.env.EMAIL_FROM ?? 'Taskify <no-reply@example.com>';
-
-    if (!key) {
-      this.log.warn(
-        'RESEND_API_KEY nie je nastavený – e-maily sa NEPOSIELAJÚ (dev no-op).',
-      );
-      this.resend = null;
-    } else {
-      this.resend = new Resend(key);
-    }
-  }
+  constructor(
+    @Inject(RESEND_CLIENT) private readonly resend: Resend | null,
+    @Inject(EMAIL_FROM_TOKEN) private readonly from: string,
+  ) {}
 
   async send(
     to: string,
@@ -33,23 +33,43 @@ export class EmailService {
     html: string,
   ): Promise<ResendResponse> {
     if (!this.resend) {
-      // Dev režim: len zaloguj, že „posielame“
-      this.log.debug(
-        `DEV EMAIL → to=${to} subject="${subject}" (no-op)\n${html}`,
+      // Dev no-op: bez kľúča iba logujeme
+      this.log.warn(
+        'RESEND_API_KEY nie je nastavený – email sa NEPOSIELA (no-op).',
       );
-      return { id: 'dev-simulated' };
+      this.log.debug(`DEV EMAIL → to=${to} subject="${subject}"\n${html}`);
+      return { id: 'dev-noop' };
     }
 
-    const res = (await this.resend.emails.send({
-      from: this.from,
-      to,
-      subject,
-      html,
-    })) as ResendResponse;
+    const maxAttempts = 3;
+    let lastErr: unknown = null;
 
-    if (res.error) {
-      throw new Error(`Resend error: ${res.error.message}`);
+    for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+      try {
+        const res = (await this.resend.emails.send({
+          from: this.from,
+          to,
+          subject,
+          html,
+        })) as ResendResponse;
+
+        if (res?.error) {
+          throw new Error(res.error.message);
+        }
+
+        this.log.log(`Email OK → to=${to} subj="${subject}" id=${res?.id}`);
+        return res;
+      } catch (err: unknown) {
+        lastErr = err;
+        this.log.error(
+          `Email fail (attempt ${attempt}/${maxAttempts}) → ${errMsg(err)}`,
+        );
+        if (attempt < maxAttempts) {
+          await new Promise((r) => setTimeout(r, attempt * 300)); // backoff
+        }
+      }
     }
-    return res;
+
+    throw new Error(`Email send failed: ${errMsg(lastErr)}`);
   }
 }
