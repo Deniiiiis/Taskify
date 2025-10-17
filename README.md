@@ -41,5 +41,5 @@ Projekt je momentálne vo fáze vývoja – implementované sú základné funkc
 
 ---
 
-Autors: Ján Ferenčák (backend)
-        Denis Čumitta (frontend)
+Authors: Ján Ferenčák (Backend Development)
+         Denis Čumitta (Frontend Development)
