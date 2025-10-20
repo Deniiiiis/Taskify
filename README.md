@@ -1,42 +1,42 @@
 # Taskify
 
-**Taskify** je mobilná aplikácia pre správu úloh (to-do list), ktorá demonštruje implementáciu autentifikácie používateľa v modernom prostredí **TypeScriptu** a **React Native**.  
-Projekt je momentálne vo fáze vývoja – implementované sú základné funkcie prihlasovania, registrácie a obnovy hesla.
+**Taskify** is a mobile task management (to-do list) application that demonstrates the implementation of user authentication in a modern **TypeScript** and **React Native** environment.  
+The project is currently in development – basic features such as login, registration, and password recovery have been implemented.
 
 ---
 
-## 🚀 Aktuálne implementované funkcionality
+## 🚀 Currently Implemented Features
 
-- 🔐 **Registrácia používateľa**
-- 🔑 **Prihlásenie používateľa**
-- 🔁 **Resetovanie zabudnutého hesla**
-- 📡 **Prepojenie s backend serverom**
-- 💾 **Ukladanie tokenu a používateľských dát (lokálne uloženie)**
-
----
-
-## 🧩 Funkcionality vo vývoji
-
-- 📋 Správa úloh (vytváranie, úprava, mazanie)  
-- ✅ Označovanie úloh ako dokončených  
-- 🧠 Kategórie / projekty pre úlohy  
-- 👤 Používateľský profil a nastavenia  
-- 🌙 Tmavý / svetlý režim
+- 🔐 **User Registration**
+- 🔑 **User Login**
+- 🔁 **Password Reset**
+- 📡 **Backend Server Integration**
+- 💾 **Token and User Data Storage (local storage)**
 
 ---
 
-## 🛠 Použité technológie
+## 🧩 Features in Development
+
+- 📋 Task management (create, edit, delete)  
+- ✅ Marking tasks as completed  
+- 🧠 Categories / projects for tasks  
+- 👤 User profile and settings  
+- 🌙 Dark / light mode
+
+---
+
+## 🛠 Technologies Used
 
 **Frontend:**
-- React Native
-- TypeScript
-- Axios
-- AsyncStorage
+- React Native  
+- TypeScript  
+- Axios  
+- AsyncStorage  
 
 **Backend:**
-- Node.js
-- Express.js
-- MongoDB
+- Node.js  
+- Express.js  
+- MongoDB  
 - JWT (JSON Web Token)
 
 ---
